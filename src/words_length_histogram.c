@@ -1,8 +1,36 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+char *format_center_str(char *str, int width) {
+  char *fill_char = " ";
+  int padding = width - strnlen(str, width);
+  int pad_left = padding / 2;
+  int pad_right = padding - pad_left;
+  int buffer_size = (width * 4);
+  char *buffer = calloc(buffer_size, sizeof(char));
+  char *ptr = buffer;
+
+  for (int i = 0; i < pad_left; i++) {
+    ptr += sprintf(ptr, "%s", fill_char);
+  }
+
+  ptr += sprintf(ptr, "%s", str);
+
+  for (int i = 0; i < pad_right; i++) {
+    ptr += sprintf(ptr, "%s", fill_char);
+  }
+
+  return buffer;
+}
+
+char *format_center_int(int value, int width) {
+  char str[width * 4];
+  sprintf(str, "%d", value);
+  return format_center_str(str, width);
+}
 
 char *format_column(int value, int width_outside, int width_inside) {
-  const char *fill_char = " ";
   const char *blocks[] = {
       " ",
       "\xE2\x96\x81", // ▁  One eighth block
@@ -15,29 +43,15 @@ char *format_column(int value, int width_outside, int width_inside) {
       "\xE2\x96\x88", // █  Full block
       "\xE2\x96\x88", // █  Full block
   };
-  int padding = width_outside - width_inside;
-  int pad_left = padding / 2;
-  int pad_right = padding - pad_left;
-  int buffer_size = (width_outside * 4);
-  char *buffer = calloc(buffer_size, sizeof(char));
-  char *ptr = buffer;
-
-  for (int i = 0; i < pad_left; i++) {
-    ptr += sprintf(ptr, "%s", fill_char);
-  }
-
+  char sign[width_inside * 4];
   for (int i = 0; i < width_inside; i++) {
-    ptr += sprintf(ptr, "%s", blocks[value]);
+    sprintf(sign, "%s", blocks[value]);
   }
-
-  for (int i = 0; i < pad_right; i++) {
-    ptr += sprintf(ptr, "%s", fill_char);
-  }
-
+  char *buffer = format_center_str(sign, width_outside);
   return buffer;
 };
 
-#define COLUMN_WIDTH_OUTER 3
+#define COLUMN_WIDTH_OUTER 4
 #define COLUMN_WIDTH_INSIDE 2
 #define MAX_HEIGHT 100
 #define MAX_WORD_LENGTH 11
@@ -77,7 +91,7 @@ int main(int argc, char *argv[]) {
     printf("%s\n", "");
   }
   for (int col = 1; col < MAX_WORD_LENGTH; col++) {
-    printf("%3d", col);
+    printf("%s", format_center_int(col, COLUMN_WIDTH_OUTER));
   }
   return EXIT_SUCCESS;
 }
